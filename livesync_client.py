@@ -84,6 +84,7 @@ def send_to_client(client_ip, client_port):
         client_socket.send(l)
         l = f.read(1024)
     print("DONE SENDING!")
+    client_socket.shutdown(socket.SHUT_WR)
     client_socket.close()
 
 
@@ -126,7 +127,7 @@ def client_thread(connection):
                 print("receiving...")
                 f.write(client_reply)
                 client_reply = connection.recv(1024)
-    except BrokenPipeError and ConnectionResetError:
+    except BrokenPipeError:
         print("DONE RECEIVING!")
         exit_thread()
 
