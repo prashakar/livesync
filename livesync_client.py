@@ -74,8 +74,8 @@ def send_to_client(client_ip, client_port, file):
         sys.exit()
 
     client_socket.connect((client_ip, int(client_port)))
-
-    client_socket.send("NAME:" + file.encode('utf-8'))
+    send_str = "NAME:" + file
+    client_socket.send(send_str.encode('utf-8'))
     f = open(file, 'rb')
     print('Sending file...')
     l = f.read(1024)
@@ -136,6 +136,7 @@ def client_thread(connection):
             print("receiving...")
             if client_reply.decode('utf-8').startswith('NAME'):
                 print("found name")
+                client_reply = connection.recv(1024)
             else:
                 f.write(client_reply)
                 client_reply = connection.recv(1024)
