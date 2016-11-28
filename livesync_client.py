@@ -1,4 +1,4 @@
-import socket, sys, time, re
+import socket, sys, time, re, os
 from _thread import *
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -135,7 +135,7 @@ def client_thread(connection):
             print("receiving...")
             if client_reply.decode('utf-8').startswith('NAME'):
                 print("found name")
-                f = open(client_reply.decode('utf-8')[4:], 'wb')
+                f = open('./livesync_recv' + client_reply.decode('utf-8')[6:], 'wb')
                 client_reply = connection.recv(1024)
             else:
                 f.write(client_reply)
