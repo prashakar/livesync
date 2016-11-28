@@ -76,9 +76,12 @@ def send_to_client(client_ip, client_port):
 
     client_socket.connect((client_ip, int(client_port)))
 
-    client_msg = "hello!"
-    client_socket.send(client_msg.encode('utf-8'))
-
+    f = open('test.png', 'rb')
+    print('Sending file...')
+    l = f.read(1024)
+    while l:
+        print('Sending...')
+        client_socket.send(l)
     client_socket.close()
 
 
@@ -112,10 +115,14 @@ observer.start()
 # handle connections, function used to create threads
 def client_thread(connection):
     try:
+        f = open('from_client.png', 'wb')
         conn.send(welcome_banner.encode('utf-8'))
         # TODO: SEND LIST OF ALL ACTIVE CLIENTS
-        client_reply = connection.recv(4096)
-        print("FROM A CLIENT SERVER " + client_reply.decode('utf-8'))
+        while 1:
+            client_reply = connection.recv(1024)
+            while client_reply:
+                f.write(client_reply)
+                client_reply = connection.recv(1024)
     except BrokenPipeError:
         exit_thread()
 
