@@ -66,7 +66,7 @@ print('------')
 welcome_banner = "You have connected to " + ip + " on port " + str(port)
 
 
-def send_to_client(client_ip, client_port):
+def send_to_client(client_ip, client_port, file):
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except socket.error as msg:
@@ -75,7 +75,8 @@ def send_to_client(client_ip, client_port):
 
     client_socket.connect((client_ip, int(client_port)))
 
-    f = open('test.jpg', 'rb')
+    client_socket.send("NAME:" + file.encode('utf-8'))
+    f = open(file, 'rb')
     print('Sending file...')
     l = f.read(1024)
     while l:
@@ -86,19 +87,29 @@ def send_to_client(client_ip, client_port):
 
 
 class MyHandler(FileSystemEventHandler):
-    def on_modified(self, event):
-        print("Got it!")
-        local_name = sock.getsockname();
-        print(local_name)
-        print(live_clients)
-        for client in live_clients:
-            match = re.search("(.*):(.*)", client)
-            if match:
-                # print("MATCH " + match.group(1) + " " + match.group(2))
-                if match.group(1) != local_name[0] or match.group(2) != str(local_name[1]):
-                    print("START NEW THREAD")
-                    start_new_thread(send_to_client, (match.group(1), match.group(2)))
+    @staticmethod
+    def on_any_event(event):
+        if event.is_directory:
+            return None
 
+        elif event.event_type == 'created':
+            # Take any action here when a file is first created.
+            print("Received created event - %s" % event.src_path)
+
+        elif event.event_type == 'modified':
+            # Taken any action here when a file is modified.
+            print("Received modified event - %s" % event.src_path)
+            file = str(event.src_path)
+            local_name = sock.getsockname();
+            print(local_name)
+            print(live_clients)
+            for client in live_clients:
+                match = re.search("(.*):(.*)", client)
+                if match:
+                    # print("MATCH " + match.group(1) + " " + match.group(2))
+                    if match.group(1) != local_name[0] or match.group(2) != str(local_name[1]):
+                        print("START NEW THREAD")
+                        start_new_thread(send_to_client, (match.group(1), match.group(2), file))
 
 event_handler = MyHandler()
 observer = Observer()
@@ -123,8 +134,11 @@ def client_thread(connection):
         client_reply = connection.recv(1024)
         while client_reply:
             print("receiving...")
-            f.write(client_reply)
-            client_reply = connection.recv(1024)
+            if client_reply.decode('utf-8').startswith('NAME'):
+                print("found name")
+            else:
+                f.write(client_reply)
+                client_reply = connection.recv(1024)
     except BrokenPipeError:
         print("DONE RECEIVING!")
         exit_thread()
