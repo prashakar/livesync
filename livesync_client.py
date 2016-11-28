@@ -74,7 +74,8 @@ def send_to_client(client_ip, client_port, file):
         sys.exit()
 
     client_socket.connect((client_ip, int(client_port)))
-    send_str = "NAME:" + file
+    send_str = "NAME:" + file[14:] + ";"
+    print(send_str)
     client_socket.send(send_str.encode('utf-8'))
     f = open(file, 'rb')
     print('Sending file...')
@@ -100,16 +101,19 @@ class MyHandler(FileSystemEventHandler):
             # Taken any action here when a file is modified.
             print("Received modified event - %s" % event.src_path)
             file = str(event.src_path)
-            local_name = sock.getsockname();
-            print(local_name)
-            print(live_clients)
-            for client in live_clients:
-                match = re.search("(.*):(.*)", client)
-                if match:
-                    # print("MATCH " + match.group(1) + " " + match.group(2))
-                    if match.group(1) != local_name[0] or match.group(2) != str(local_name[1]):
-                        print("START NEW THREAD")
-                        start_new_thread(send_to_client, (match.group(1), match.group(2), file))
+            if "swp" not in file:
+                local_name = sock.getsockname();
+                print(local_name)
+                print(live_clients)
+                for client in live_clients:
+                    match = re.search("(.*):(.*)", client)
+                    if match:
+                        # print("MATCH " + match.group(1) + " " + match.group(2))
+                        if match.group(1) != local_name[0] or match.group(2) != str(local_name[1]):
+                            print("START NEW THREAD")
+                            start_new_thread(send_to_client, (match.group(1), match.group(2), file))
+            else:
+                print("SWAP FILE CHANGE DROPPED")
 
 event_handler = MyHandler()
 observer = Observer()
@@ -131,12 +135,17 @@ def client_thread(connection):
     try:
         # TODO: SEND LIST OF ALL ACTIVE CLIENTS
         client_reply = connection.recv(1024)
+        done_name = False
         while client_reply:
             print("receiving...")
-            if client_reply.decode('utf-8').startswith('NAME'):
-                print("found name")
-                f = open('./livesync_recv' + client_reply.decode('utf-8')[6:], 'wb')
-                client_reply = connection.recv(1024)
+            if done_name is False:
+                if client_reply.decode('utf-8').startswith('NAME'):
+                    done_name = True
+                    client_split = client_reply.decode('utf-8')[6:].split(';')
+                    print("found name " + client_split[0])
+                    f = open('./livesync_recv/' + client_split[0], 'wb')
+                    f.write(str.encode(client_split[1]))
+                    client_reply = connection.recv(1024)
             else:
                 f.write(client_reply)
                 client_reply = connection.recv(1024)
