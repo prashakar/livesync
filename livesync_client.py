@@ -76,7 +76,7 @@ def send_to_client(client_ip, client_port):
 
     client_socket.connect((client_ip, int(client_port)))
 
-    f = open('test.png', 'rb')
+    f = open('test.jpg', 'rb')
     print('Sending file...')
     l = f.read(1024)
     while l:
@@ -127,8 +127,8 @@ def client_thread(connection):
                 print("receiving...")
                 f.write(client_reply)
                 client_reply = connection.recv(1024)
-            print("DONE RECEIVING!")
-    except BrokenPipeError:
+    except BrokenPipeError and ConnectionResetError:
+        print("DONE RECEIVING!")
         exit_thread()
 
 while 1:
