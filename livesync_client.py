@@ -16,10 +16,16 @@ except socket.error as msg:
 
 print('Socket Created')
 
-# Connect to remote server
-tracker_sock.connect(('10.100.42.221', 3321))
+#server_ip = input("Enter server IP:\n")
+#server_port = input("Enter server PORT:\n")
 
-print('Socket Connected to TRACKER SERVER port ' + str(3321) + ' on ip ' + '10.100.45.57')
+server_ip = '52.34.233.122'
+server_port = '49445'
+
+# Connect to remote server
+tracker_sock.connect((str(server_ip), int(server_port)))
+
+print('Socket Connected to TRACKER SERVER port ' + str(server_port) + ' on ip ' + str(server_ip))
 
 
 def receive_data(tracker_sock):
