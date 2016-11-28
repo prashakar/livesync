@@ -101,7 +101,7 @@ class MyHandler(FileSystemEventHandler):
 
 event_handler = MyHandler()
 observer = Observer()
-observer.schedule(event_handler, path='.', recursive=False)
+observer.schedule(event_handler, path='./livesync_dir', recursive=False)
 observer.start()
 #
 # try:
