@@ -129,13 +129,13 @@ observer.start()
 # handle connections, function used to create threads
 def client_thread(connection):
     try:
-        f = open('from_client.jpg', 'wb')
         # TODO: SEND LIST OF ALL ACTIVE CLIENTS
         client_reply = connection.recv(1024)
         while client_reply:
             print("receiving...")
             if client_reply.decode('utf-8').startswith('NAME'):
                 print("found name")
+                f = open(client_reply.decode('utf-8')[4:], 'wb')
                 client_reply = connection.recv(1024)
             else:
                 f.write(client_reply)
