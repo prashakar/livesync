@@ -32,6 +32,7 @@ def receive_data(tracker_sock):
         print("FROM TRACKER SERVER " + reply.decode())
         tracker_sock.send(str(port).encode('utf-8'))
 
+
 start_new_thread(receive_data, (tracker_sock,))
 
 print('------')
@@ -44,8 +45,6 @@ except socket.error as msg:
     sys.exit()
 
 print('Server socket created')
-
-
 
 buff_size = 1024
 client_conn = []
@@ -84,8 +83,6 @@ def send_to_client(client_ip, client_port):
         client_socket.send(l)
         l = f.read(1024)
     print("DONE SENDING!")
-    client_socket.shutdown(socket.SHUT_WR)
-    client_socket.close()
 
 
 class MyHandler(FileSystemEventHandler):
@@ -102,10 +99,13 @@ class MyHandler(FileSystemEventHandler):
                     print("START NEW THREAD")
                     start_new_thread(send_to_client, (match.group(1), match.group(2)))
 
+
 event_handler = MyHandler()
 observer = Observer()
 observer.schedule(event_handler, path='./livesync_dir', recursive=False)
 observer.start()
+
+
 #
 # try:
 #     while True:
@@ -119,14 +119,12 @@ observer.start()
 def client_thread(connection):
     try:
         f = open('from_client.jpg', 'wb')
-        conn.send(welcome_banner.encode('utf-8'))
         # TODO: SEND LIST OF ALL ACTIVE CLIENTS
-        while 1:
+        client_reply = connection.recv(1024)
+        while client_reply:
+            print("receiving...")
+            f.write(client_reply)
             client_reply = connection.recv(1024)
-            while client_reply:
-                print("receiving...")
-                f.write(client_reply)
-                client_reply = connection.recv(1024)
     except BrokenPipeError:
         print("DONE RECEIVING!")
         exit_thread()
@@ -137,6 +135,3 @@ while 1:
 
     # start new thread
     start_new_thread(client_thread, (conn,))
-
-
-
