@@ -44,4 +44,5 @@ pip3 install watchdog
 Prashakar Prabagaran – prashakarp@gmail.com
 
 [LiveSync repo on GitHub](https://github.com/prashakar/livesync)
+
 [Personal Website](http://www.prashakar.com)
