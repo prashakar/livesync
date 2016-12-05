@@ -201,7 +201,7 @@ class MyHandler(FileSystemEventHandler):
 # observer used to monitor filesystem
 event_handler = MyHandler()
 observer = Observer()
-observer.schedule(event_handler, path='./livesync_dir', recursive=False)
+observer.schedule(event_handler, path='./livesync_send', recursive=False)
 observer.start()
 
 
@@ -234,7 +234,7 @@ def client_thread(connection):
                     client_split = client_reply.decode('utf-8')[6:].split(';')
                     print("found name " + client_split[0])
                     # initially write to filesystem based on the filename received
-                    f = open('./livesync_recv/' + client_split[0], 'wb')
+                    f = open('./livesync_received/' + client_split[0], 'wb')
                     # write any additional bytes
                     f.write(str.encode(client_split[1]))
                     # check for more data from remote client
